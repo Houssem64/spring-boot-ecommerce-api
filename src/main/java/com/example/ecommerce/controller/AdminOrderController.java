@@ -1,6 +1,7 @@
 package com.example.ecommerce.controller;
 
 import com.example.ecommerce.dto.OrderResponse;
+import com.example.ecommerce.dto.OrderStatusRequest;
 import com.example.ecommerce.model.OrderStatus;
 import com.example.ecommerce.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,8 @@ public class AdminOrderController {
     @PutMapping("/{id}/status")
     public ResponseEntity<OrderResponse> updateOrderStatus(
             @PathVariable Long id,
-            @RequestBody OrderStatus status) {
-        return ResponseEntity.ok(orderService.updateOrderStatus(id, status));
+            @RequestBody OrderStatusRequest statusRequest) {
+        OrderResponse updatedOrder = orderService.updateOrderStatus(id, statusRequest.getStatus());
+        return ResponseEntity.ok(updatedOrder);
     }
 } 
