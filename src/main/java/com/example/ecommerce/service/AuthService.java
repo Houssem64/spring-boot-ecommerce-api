@@ -1,6 +1,7 @@
 package com.example.ecommerce.service;
 
 import com.example.ecommerce.dto.AuthRequest;
+import com.example.ecommerce.dto.AuthResponse;
 import com.example.ecommerce.dto.RegisterRequest;
 import com.example.ecommerce.model.Role;
 import com.example.ecommerce.model.User;
@@ -12,6 +13,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -21,7 +24,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
 
-    public String register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
@@ -36,10 +39,17 @@ public class AuthService {
 
         userRepository.save(user);
 
-        return jwtUtil.generateToken(user.getEmail(), user.getRole());
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
+
+        return AuthResponse.builder()
+                .token(token)
+                .type("Bearer")
+                .email(user.getEmail())
+                .roles(Collections.singletonList(user.getRole().name()))
+                .build();
     }
 
-    public String authenticate(AuthRequest request) {
+    public AuthResponse authenticate(AuthRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -50,6 +60,13 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return jwtUtil.generateToken(user.getEmail(), user.getRole());
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
+
+        return AuthResponse.builder()
+                .token(token)
+                .type("Bearer")
+                .email(user.getEmail())
+                .roles(Collections.singletonList(user.getRole().name()))
+                .build();
     }
-} 
+}
